@@ -19,6 +19,15 @@ estimator.estimatePPRSingleSource(0, 1)
 estimator.estimatePPRSingleSource(0, 1, relativeError=0.01f) // For greater accuracy
 ```
 
+Our algorithm can also start from a distribution over source nodes rather than a single node. For
+ example, if we to estimate PPR scores using random walks that start at node 0 with probability 0.8 
+ and node 2 with probability 0.2, we can run
+ 
+ ```
+ val sourceDistribution = new soal.util.DiscreteAliasSampler(Seq(0, 2), Seq(0.8f, 0.2f))
+ estimator.estimatePPR(sourceDistribution, 1)
+ ```
+
 For large graphs, you likely will want to first convert your graph to a [MemoryMappedDirectedGraph]
 (https://github.com/twitter/cassovary/blob/master/cassovary-core/src/main/scala/com/twitter/cassovary/graph/MemoryMappedDirectedGraph.scala)
  to improve load time and RAM usage.
