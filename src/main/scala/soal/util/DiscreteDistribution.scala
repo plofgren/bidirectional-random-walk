@@ -9,18 +9,16 @@ import scala.util.Random
 
 trait DiscreteDistribution {
   def sample(): Int
-  def valuesAndProbabilities(): Iterable[(Int, Float)]
-  def expectation(f: Int => Float): Float =
-    (valuesAndProbabilities() map { case (v, p) => p * f(v) }).sum
+  def expectation(f: Int => Float): Float
 }
 
 class ConstantDistribution(value: Int) extends DiscreteDistribution {
   def sample(): Int = value
-  def valuesAndProbabilities() = List((value, 1.0f))
+  def expectation(f: Int => Float) = f(value)
 }
 
 class UniformDistribution(values: IndexedSeq[Int], random: Random) extends DiscreteDistribution {
   def sample(): Int = values(random.nextInt(values.size))
-  def valuesAndProbabilities() =
-    values zip Array.fill(values.size)(1.0f / values.size)
+  def expectation(f: Int => Float) =
+    (values map f).sum / values.size
 }

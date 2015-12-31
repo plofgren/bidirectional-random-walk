@@ -17,10 +17,6 @@ import scala.collection.mutable
 class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
                                  val teleportProbability: Float,
                                  val random: Random = new Random) {
-  /** The number of miliseconds it takes to generate a random walk.  Can be tuned on a given
-    * platform and graph to improve running time. */
-  val msPerWalk = 5.0e-4f
-
   /**
    * Estimates the personalized PageRank score from the given source to the given target.  The the
    * true score is greater than the given minimumPPR, then the result will have mean relative
@@ -43,6 +39,7 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
 
     def computeWalkCount(maxResidual: Float): Int =
       (chernoffMultiplier * maxResidual / minimumPPR).toInt
+    val msPerWalk = estimateMsPerWalk(sourceDistribution)
     def estimateForwardTimeInMillis(maxResidual: Float): Float =
       computeWalkCount(maxResidual) * msPerWalk
     val (estimates, residuals, maxResidual) =
@@ -167,5 +164,16 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
       }
     }
     v
+  }
+
+  /** Does the given number of walks on the given graph and returns the mean time per walk, in
+    * milliseconds.  Used to autmatically balance forward and reverse work. */
+  def estimateMsPerWalk(sourceDistribution: DiscreteDistribution, walkCount: Int = 1000): Float = {
+    val millisPerNano = 1.0e6f
+    val startTime = System.nanoTime()
+    for (i <- 0 until walkCount) {
+      samplePPR(sourceDistribution)
+    }
+    (System.nanoTime() - startTime).toFloat / walkCount * millisPerNano
   }
 }
