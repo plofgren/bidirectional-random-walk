@@ -1,11 +1,8 @@
-name := "ppr-search"
+name := "bidirectional-random-walk"
 
-version := "0.1"
+version := "1.0"
 
 scalaVersion := "2.11.5"
-
-
-libraryDependencies += "com.twitter" %% "cassovary-core" % "6.3.0"
 
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
 
