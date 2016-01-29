@@ -12,9 +12,22 @@ class ConcurrentHashMapDynamicGraphSpec extends WordSpec with Matchers {
         graph.nodeCountOption.get shouldEqual (i + 1)
         graph.maxNodeId shouldEqual (10 * i)
       }
-      graph.addEdge(10, 20) // Accessing again should not increase node count
+      graph.addEdge(10, 20) // Adding edges to existing nodes should not increase node count
       graph.nodeCountOption.get shouldEqual 4
       graph.existsNode(1000000) shouldEqual false
+
+      graph.outNeighbors(10) should contain theSameElementsAs (Seq(1, 20))
+      graph.inNeighbors(1) should contain theSameElementsAs (Seq(10, 20, 30))
+
+      an[IndexOutOfBoundsException] should be thrownBy {
+        graph.outNeighbor(10, 2)
+      }
+      a[NoSuchElementException] should be thrownBy {
+        graph.outNeighbor(7, 0)
+      }
+      a[NoSuchElementException] should be thrownBy {
+        graph.outDegree(7)
+      }
     }
 
     "support adding edges" in {

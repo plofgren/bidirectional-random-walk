@@ -51,11 +51,28 @@ class MemoryMappedDirectedGraphSpec extends WordSpec with Matchers {
           testGraph1.inNeighbors(id) should contain theSameElementsAs (graph1.inNeighbors(id))
         }
       }
-      graph1.getNodeById(-1) should be(None)
-      graph1.getNodeById(6) should be(None)
-      graph1.getNodeById(1 << 29) should be(None)
-      tempFile.delete()
 
+      graph1.outNeighbor(1, 1) should equal (3)
+      graph1.inNeighbor(1, 1) should equal (5)
+
+      an[IndexOutOfBoundsException] should be thrownBy {
+        graph1.outNeighbor(1, 2)
+      }
+      an[IndexOutOfBoundsException] should be thrownBy {
+        graph1.outNeighbor(1, -1)
+      }
+      an[NoSuchElementException] should be thrownBy {
+        graph1.outNeighbor(6, 0)
+      }
+      an[NoSuchElementException] should be thrownBy {
+        graph1.outDegree(6)
+      }
+
+      graph1.existsNode(-1) shouldEqual false
+      graph1.existsNode(6) shouldEqual false
+      graph1.existsNode(1 << 29) shouldEqual false
+
+      tempFile.delete()
     }
 
     "throw an error given an invalid filename" in {
@@ -88,13 +105,11 @@ class MemoryMappedDirectedGraphSpec extends WordSpec with Matchers {
         val graph = new MemoryMappedDirectedGraph(tempBinaryFile)
         graph.nodeCount shouldEqual (6)
         graph.edgeCount shouldEqual(5)
-        val node1 = graph.getNodeById(1).get
-        node1.outboundNodes should contain theSameElementsInOrderAs Seq(0, 2, 3, 5)
-        node1.inboundNodes should contain theSameElementsInOrderAs Seq(3)
-        val node2 = graph.getNodeById(2).get
-        node2.inboundNodes should contain theSameElementsInOrderAs Seq(1)
-        val node5 = graph.getNodeById(5).get
-        node5.inboundNodes should contain theSameElementsInOrderAs Seq(1)
+
+        graph.outNeighbors(1) should contain theSameElementsInOrderAs Seq(0, 2, 3, 5)
+        graph.inNeighbors(1) should contain theSameElementsInOrderAs Seq(3)
+        graph.inNeighbors(2) should contain theSameElementsInOrderAs Seq(1)
+        graph.inNeighbors(5) should contain theSameElementsInOrderAs Seq(1)
       }
       tempBinaryFile.delete()
       tempEdgeFile.delete()
