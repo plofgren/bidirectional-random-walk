@@ -8,6 +8,7 @@ package co.teapot.util
 class ConcurrentIntArrayList {
   @volatile private var intArray: Array[Int] = new Array[Int](ConcurrentIntArrayList.initialCapacity)
   @volatile private var _size = 0
+  def size: Int = _size
 
   def append(ints: Seq[Int]): Unit = {
     this.synchronized {
@@ -33,12 +34,9 @@ class ConcurrentIntArrayList {
   def toIndexedSeq: IndexedSeq[Int] = {
     // First copy the size, since another thread might increase the size if we copy the intArray
     // reference first, causing size to be longer than intArray.
-    val result = new IntArrayView(_size)
-    result.intArray = intArray
-    result
+    val resultSize = _size
+    new IntArrayView(intArray, _size)
   }
-
-  def size: Int = _size
 }
 
 object ConcurrentIntArrayList {
@@ -47,12 +45,10 @@ object ConcurrentIntArrayList {
 }
 
 /**
-  * Stores a reference to an array and a size to create a view of the prefix of the array.  In our use case, the size needs
-  * to be set before the intArray to prevent a race condition.
+  * Stores a reference to an array and a size to create a view of the prefix of the array.
   */
-class IntArrayView(override val size: Int) extends IndexedSeq[Int] {
-  /** The array this view wraps. */
-  var intArray: Array[Int] = null // Should be set after the view has been created
+class IntArrayView(val intArray: Array[Int],
+                   override val size: Int) extends IndexedSeq[Int] {
   override def length: Int = size
   override def apply(idx: Int): Int = intArray(idx)
 }
