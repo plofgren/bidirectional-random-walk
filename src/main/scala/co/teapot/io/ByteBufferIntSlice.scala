@@ -13,13 +13,15 @@
  */
 package co.teapot.io
 
-import IntSourceSlice.BytesPerInt
+import java.nio.MappedByteBuffer
 
-class IntSourceSlice(val data: IntLongSource,
-                     val offset: Long,
-                     val length: Int) extends IndexedSeq[Int] {
+import ByteBufferIntSlice.BytesPerInt
+
+class ByteBufferIntSlice(val data: MappedByteBuffer,
+                         val offset: Int,
+                         val length: Int) extends IndexedSeq[Int] {
   def apply(i: Int) = data.getInt(offset + BytesPerInt * i)
 }
-object IntSourceSlice {
+object ByteBufferIntSlice {
   val BytesPerInt = 4
 }
