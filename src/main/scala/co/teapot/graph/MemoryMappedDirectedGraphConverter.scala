@@ -121,11 +121,12 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
 
   private def writeHeader(): Unit = {
     val outputStream = new RandomAccessFile(outputGraphFile, "rw")
+    outputStream.seek(0L)
     outputStream.writeLong(Version)
     outputStream.writeInt(nodeCount)
     outputStream.writeLong(distinctEdgeCount)
     outputStream.writeInt(segmentCount)
-    var segmentOffset = OffsetToSegmentOffsets + (segmentCount + 1) * BytesPerSegmentOffset * 2
+    var segmentOffset: Long = OffsetToSegmentOffsets + (segmentCount + 1) * BytesPerSegmentOffset * 2
     for (dir <- Seq(EdgeDir.Out, EdgeDir.In)) {
       for (segmentI <- 0 until segmentCount) {
         outputStream.writeLong(segmentOffset)
@@ -142,6 +143,7 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
     * writeEdgeDataToStream to write the edges to output
     */
   private def convertSegmentsToBinary(): Unit = {
+    outputGraphFile.delete() // Delete any data that might be in the output file
     val outputStream = createOutputStream(outputGraphFile)
     val headerSize = OffsetToSegmentOffsets + (segmentCount + 1) * 2 * BytesPerSegmentOffset
     // Skip over header (which we will write later)
@@ -166,12 +168,12 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
         writeEdgeDataToStream(distinctNeighborArrayLists, outputStream)
 
         // Store segment size
-        val edgeCount = (distinctNeighborArrayLists map { _.size }).sum
+        val edgeCount = (distinctNeighborArrayLists map { _.size.toLong }).sum
         if (dir == EdgeDir.Out)
           distinctEdgeCount += edgeCount
         val segmentSize = (nodesPerSegment + 1) * BytesPerNodeOffset + edgeCount * BytesPerNeighbor
         require(segmentSize < Integer.MAX_VALUE, "Segment too large for Int indexing")
-        segmentSizes(dir)(segmentI) = segmentSize
+        segmentSizes(dir)(segmentI) = segmentSize.toInt
         log(s"wrote ${segmentI + 1} of $segmentCount $dir-segments.")
       }
     }
