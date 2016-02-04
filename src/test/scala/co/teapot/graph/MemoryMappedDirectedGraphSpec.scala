@@ -73,8 +73,19 @@ class MemoryMappedDirectedGraphSpec extends WordSpec with Matchers {
       an[IndexOutOfBoundsException] should be thrownBy {
         graph1.outNeighbor(1, -1)
       }
+
+      an[IndexOutOfBoundsException] should be thrownBy {
+        graph1.outNeighbors(1)(2)
+      }
+      an[IndexOutOfBoundsException] should be thrownBy {
+        graph1.outNeighbors(1)(-1)
+      }
+
       an[NoSuchElementException] should be thrownBy {
         graph1.outNeighbor(6, 0)
+      }
+      an[NoSuchElementException] should be thrownBy {
+        graph1.outNeighbors(6)
       }
       an[NoSuchElementException] should be thrownBy {
         graph1.outDegree(6)

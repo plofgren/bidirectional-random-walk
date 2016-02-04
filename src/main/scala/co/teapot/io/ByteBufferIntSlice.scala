@@ -17,11 +17,22 @@ import java.nio.MappedByteBuffer
 
 import ByteBufferIntSlice.BytesPerInt
 
-class ByteBufferIntSlice(val data: MappedByteBuffer,
+class ByteBufferIntSlice(val buffer: MappedByteBuffer,
                          val offset: Int,
-                         val length: Int) extends IndexedSeq[Int] {
-  def apply(i: Int) = data.getInt(offset + BytesPerInt * i)
+                         val _length: Int) extends IndexedSeq[Int] {
+  def length: Int = _length
+
+  def apply(i: Int) =
+    if (0 <= i && i < length)
+      buffer.getInt(offset + BytesPerInt * i)
+    else
+      throw new IndexOutOfBoundsException(s"index $i in ByteBufferIntSlice of length $length")
+
+  /** Returns a view of the n Ints starting from offset. */
+  def subSlice(offset: Int, n: Int): ByteBufferIntSlice =
+    new ByteBufferIntSlice(buffer, offset * BytesPerInt, n)
 }
+
 object ByteBufferIntSlice {
   val BytesPerInt = 4
 }
