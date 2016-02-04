@@ -57,9 +57,10 @@ class MemoryMappedDirectedGraphSpec extends WordSpec with Matchers {
 
       val graph1 = new MemoryMappedDirectedGraph(tempBinaryFile)
       for (id <- testGraph1.nodeIds) {
-        println(s"id: $id")
-        graph1.outNeighbors(id) should contain theSameElementsAs testGraph1.outNeighbors(id)
-        graph1.inNeighbors(id) should contain theSameElementsAs testGraph1.inNeighbors(id)
+        withClue(s"id: $id") {
+          graph1.outNeighbors(id) should contain theSameElementsAs testGraph1.outNeighbors(id)
+          graph1.inNeighbors(id) should contain theSameElementsAs testGraph1.inNeighbors(id)
+        }
       }
 
       graph1.outNeighbor(1, 1) should equal (3)
