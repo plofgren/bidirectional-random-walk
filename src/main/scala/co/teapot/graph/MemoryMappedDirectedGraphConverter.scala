@@ -185,10 +185,12 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
     * to the start of this segment), then writes the neigbhor data.
     */
   private def writeEdgeDataToStream(neighborArrayLists: Array[IntArrayList], out: DataOutputStream): Unit = {
-    var offset = 0
+    // The first neighbor's data starts after (nodesPerSegment + 1) Int offsets
+    // This offset counts Ints, not Bytes
+    var offset = nodesPerSegment + 1
     for (neighborList <- neighborArrayLists) {
       out.writeInt(offset)
-      offset += neighborList.size * BytesPerNeighbor
+      offset += neighborList.size
     }
     out.writeInt(offset) // Write extra offset for computing degree of last node
 

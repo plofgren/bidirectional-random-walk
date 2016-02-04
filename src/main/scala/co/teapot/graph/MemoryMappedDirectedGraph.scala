@@ -63,7 +63,7 @@ byteCount  data
 
 Each out-neighbor segment:
 byteCount  data
-4*(n/k+1)  Offset in bytes into out-neighbor data relative to the start of this segment. Index j
+4*(n/k+1)  Offset in Ints into out-neighbor data relative to the start of this segment. Index j
            plus the offset of this segment points to the out-neighbor data of node
            id = (j * segmentCount + i).  The
            out-neighbor data is be stored in increasing order by id, so the outegree of node
@@ -161,7 +161,7 @@ class MemoryMappedDirectedGraph(file: File) extends DirectedGraph {
       val offset = headerData.getLong(baseOffset + i * BytesPerSegmentOffset)
       val size = headerData.getLong(baseOffset + (i + 1) * BytesPerSegmentOffset) - offset
       val buffer = fileChannel.map(MapMode.READ_ONLY,  offset, size)
-      new Segment(new ByteBufferIntSlice(buffer, 0, size.toInt), nodesPerSegment)
+      new Segment(new ByteBufferIntSlice(buffer, 0, size.toInt / BytesPerInt))
     }
   }
 }
@@ -170,12 +170,10 @@ class MemoryMappedDirectedGraph(file: File) extends DirectedGraph {
 segmentCount, where id is the id of the node in the overall graph.  The same segment class is
 used for out-neighbors and in-neighbors.
  */
-private[graph] class Segment(val data: ByteBufferIntSlice, nodesPerSegment: Int) {
-  val neighborDataOffset = nodesPerSegment + 1
-
-  /** Returns the offset (in Ints, not bytes) where the ith node's neighbor data starts. */
+private[graph] class Segment(val data: ByteBufferIntSlice) {
+  /** Returns the offset (in Ints, not Bytes) where the ith node's neighbor data starts. */
   def offset(i: Int): Int =
-    neighborDataOffset +  data(i)
+    data(i)
 
   /** Returns the degree of the ith node in this segment. */
   def degree(i: Int): Int =
@@ -183,7 +181,7 @@ private[graph] class Segment(val data: ByteBufferIntSlice, nodesPerSegment: Int)
 
   /** Returns the jth neighbor of the i-th node in this segment. */
   def neighbor(i: Int, j: Int): Int =
-    data(offset(i))
+    data(offset(i) + j)
 
   /** Returns a view of the neighbors of the i-th node in this segment. */
   def neighbors(i: Int): IndexedSeq[Int] =
@@ -205,7 +203,9 @@ object MemoryMappedDirectedGraph {
   val OffsetToSegmentOffsets = 24
 
   val BytesPerSegmentOffset = 8
+  val BytesPerNodeOffset = 4 // Size of offsets per node within each segment
   val BytesPerNeighbor = 4
+  val BytesPerInt = 4
 
   val Version = 1L
 }
