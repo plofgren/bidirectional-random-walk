@@ -11,9 +11,9 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package co.teapot.io
+package co.teapot.legacy
 
-import IntSourceSlice.BytesPerInt
+import co.teapot.legacy.IntSourceSlice.BytesPerInt
 
 class IntSourceSlice(val data: IntLongSource,
                      val offset: Long,
