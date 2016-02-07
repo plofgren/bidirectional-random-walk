@@ -35,7 +35,7 @@ class ConcurrentIntArrayList {
     // First copy the size, since another thread might increase the size if we copy the intArray
     // reference first, causing size to be longer than intArray.
     val resultSize = _size
-    new IntArrayView(intArray, _size)
+    new IntArrayView(intArray, resultSize)
   }
 }
 
