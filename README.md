@@ -11,7 +11,7 @@ small graph in
 /src/test/resources/test_graph.txt.  First install java, sbt, and git.  Then simply run
 
 ```
-git checkout https://github.com/plofgren/bidirectional-random-walk.git
+git clone https://github.com/plofgren/bidirectional-random-walk.git
 cd bidirectional-random-walk
 sbt console
 val graph = co.teapot.graph.ConcurrentHashMapDynamicGraph.readGraph("src/test/resources/test_graph
@@ -44,6 +44,8 @@ input to our converter is a simple text format where each line has the form "id1
 indicate an edge from id1 to id2, where id1 and id2 are Ints.  To convert the test graph, for 
 example, run:
 ```
+git clone https://github.com/plofgren/bidirectional-random-walk.git
+cd bidirectional-random-walk
 sbt assembly
 java -Xmx2g -cp target/scala-2.11/bidirectional-random-walk-assembly-1.0.jar\
   co.teapot.graph.MemoryMappedDirectedGraphConverter \
