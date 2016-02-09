@@ -20,6 +20,7 @@ import java.util.regex.Pattern
 import co.teapot.graph.EdgeDir.EdgeDir
 import co.teapot.util.IntArrayUtil
 import it.unimi.dsi.fastutil.ints.IntArrayList
+import co.teapot.graph.MemoryMappedDirectedGraphConstants._
 
 import scala.collection.mutable
 import scala.io.Source
