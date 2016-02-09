@@ -40,7 +40,7 @@ which stores graphs in an efficient binary format that requires only 8 bytes per
  parse a text file, the load operation is a set of memory map calls.
 
 For large graphs, you will want to first convert your graph to a MemoryMappedDirectedGraph.  The 
-input to our converter is a simple text format where each line has the form "<id1> <id2>" to 
+input to our converter is a simple text format where each line has the form "id1 id2" to 
 indicate an edge from id1 to id2.  To convert the test graph, for example, run:
 ```
 sbt assembly
