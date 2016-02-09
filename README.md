@@ -41,7 +41,8 @@ which stores graphs in an efficient binary format that requires only 8 bytes per
 
 For large graphs, you will want to first convert your graph to a MemoryMappedDirectedGraph.  The 
 input to our converter is a simple text format where each line has the form "id1 id2" to 
-indicate an edge from id1 to id2.  To convert the test graph, for example, run:
+indicate an edge from id1 to id2, where id1 and id2 are Ints.  To convert the test graph, for 
+example, run:
 ```
 sbt assembly
 java -Xmx2g -cp target/scala-2.11/bidirectional-random-walk-assembly-1.0.jar\
