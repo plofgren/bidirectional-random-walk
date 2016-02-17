@@ -118,14 +118,14 @@ class MemoryMappedDirectedGraph(file: File) extends DirectedGraph {
       defaultNeighbors(id)
 
   override def outNeighbor(id: Int, i: Int): Int =
-    if (0 <= i && i < outDegree(i))
+    if (0 <= i && i < outDegree(id))
       outNeighborSegments(id % segmentCount).neighbor(id / segmentCount, i)
     else
       throw new IndexOutOfBoundsException(
         s"invalid index $i to node $id with outDegree ${outDegree(id)}")
 
   override def inNeighbor(id: Int, i: Int): Int =
-    if (0 <= i && i < inDegree(i))
+    if (0 <= i && i < inDegree(id))
       inNeighborSegments(id % segmentCount).neighbor(id / segmentCount, i)
     else
       throw new IndexOutOfBoundsException(

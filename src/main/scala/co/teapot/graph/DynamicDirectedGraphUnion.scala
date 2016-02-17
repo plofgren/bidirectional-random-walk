@@ -26,20 +26,20 @@ class DynamicDirectedGraphUnion(staticGraph: DirectedGraph, dynamicGraph: Dynami
   else
     (staticGraph.nodeIds.toSet ++ dynamicGraph.nodeIds.toSet).size
 
-  override def outDegree(id: Int): Int = staticGraph.outDegree(id) + dynamicGraph.outDegree(id)
-  override def inDegree(id: Int): Int = staticGraph.inDegree(id) + dynamicGraph.inDegree(id)
+  override def outDegree(id: Int): Int = staticGraph.outDegreeOr0(id) + dynamicGraph.outDegreeOr0(id)
+  override def inDegree(id: Int): Int = staticGraph.inDegreeOr0(id) + dynamicGraph.inDegreeOr0(id)
 
   override def outNeighbor(id: Int, i: Int): Int =
-    if (i < staticGraph.outDegree(id))
+    if (i < staticGraph.outDegreeOr0(id))
       staticGraph.outNeighbor(id, i)
     else
-      dynamicGraph.outNeighbor(id, i - staticGraph.outDegree(id))
+      dynamicGraph.outNeighbor(id, i - staticGraph.outDegreeOr0(id))
 
   override def inNeighbor(id: Int, i: Int): Int =
-    if (i < staticGraph.inDegree(id))
+    if (i < staticGraph.inDegreeOr0(id))
       staticGraph.inNeighbor(id, i)
     else
-      dynamicGraph.inNeighbor(id, i - staticGraph.inDegree(id))
+      dynamicGraph.inNeighbor(id, i - staticGraph.inDegreeOr0(id))
 
   override def outNeighbors(id: Int): IndexedSeq[Int] =
     (staticGraph.existsNode(id), dynamicGraph.existsNode(id)) match {
