@@ -23,8 +23,8 @@ import java.nio.file.StandardOpenOption
 import co.teapot.graph.EdgeDir.EdgeDir
 import co.teapot.io.ByteBufferIntSlice
 
-// Make the constants in MemoryMappedDirectedGraph available
-import co.teapot.graph.MemoryMappedDirectedGraph._
+// Make constants available
+import co.teapot.graph.MemoryMappedDirectedGraphConstants._
 
 /**
  * A graph which reads edge data from a memory mapped file.  There is no object overhead per
@@ -74,18 +74,17 @@ byteCount  data
 Each in-neighbor segment is analogous to an out-neighbor segment.
  */
 class MemoryMappedDirectedGraph(file: File) extends DirectedGraph {
-  val fileChannel = FileChannel.open(file.toPath, StandardOpenOption.READ)
+  private val fileChannel = FileChannel.open(file.toPath, StandardOpenOption.READ)
 
-  val headerData = memoryMapHeader()
+  private val headerData = memoryMapHeader()
   require(headerData.getLong(OffsetToVersion) == Version,
     s"Invalid graph version ${headerData.getLong(OffsetToVersion)}")
   override val nodeCount = headerData.getInt(OffsetToNodeCount)
   override val edgeCount = headerData.getLong(OffsetToEdgeCount)
-  val segmentCount = headerData.getInt(OffsetToSegmentCount)
-  val nodesPerSegment = nodeCount / segmentCount
+  private val segmentCount = headerData.getInt(OffsetToSegmentCount)
 
-  val outNeighborSegments: Array[Segment] = memoryMapSegments(EdgeDir.Out)
-  val inNeighborSegments: Array[Segment] = memoryMapSegments(EdgeDir.In)
+  private val outNeighborSegments: Array[Segment] = memoryMapSegments(EdgeDir.Out)
+  private val inNeighborSegments: Array[Segment] = memoryMapSegments(EdgeDir.In)
 
   override def maxNodeId = nodeCount - 1
 
@@ -194,8 +193,10 @@ object MemoryMappedDirectedGraph {
 
   def apply(filename: String): MemoryMappedDirectedGraph =
     new MemoryMappedDirectedGraph(new File(filename))
+}
 
-  // Constants related to the binary format
+object MemoryMappedDirectedGraphConstants {
+// Constants related to the binary format
   val OffsetToVersion = 0
   val OffsetToNodeCount = 8
   val OffsetToEdgeCount = 12
