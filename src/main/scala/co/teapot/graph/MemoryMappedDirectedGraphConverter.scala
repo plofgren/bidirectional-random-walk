@@ -55,12 +55,14 @@ object MemoryMappedDirectedGraphConverter {
   }
 
   def main(args: Array[String]): Unit = {
-    if (args.length != 2) {
+    if (args.length < 2) {
       System.err.println("Usage: MemoryMappedDirectedGraphConverter " +
-        "<edge list filename> <binary output filename>")
+        "<edge list filename> <binary output filename> <optional segment count>")
       System.exit(1)
     }
-    MemoryMappedDirectedGraphConverter.convert(new File(args(0)), new File(args(1)))
+    val segmentCountOption = args.lift(2) map (_.toInt) // use args(2) if it's defined
+    MemoryMappedDirectedGraphConverter.convert(new File(args(0)), new File(args(1)),
+      segmentCountOption = segmentCountOption)
   }
 }
 
@@ -71,6 +73,7 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
   val InputBytesPerSegment = 1000L * 1000L * 1000L // Segments of 1 GB of input text
   val segmentCount = segmentCountOption.getOrElse(
       (edgeListFile.length() / InputBytesPerSegment).toInt + 1)
+  log(s"segmentCount: $segmentCount")
 
   val temporaryFilesById1 = Array.fill(segmentCount)(createTemporaryFile())
   val temporaryFilesById2 = Array.fill(segmentCount)(createTemporaryFile())
@@ -151,7 +154,7 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
 
     for (dir <- Seq(EdgeDir.Out, EdgeDir.In)) {
       for (segmentI <- 0 until segmentCount) {
-        val neighborArrayLists = Array.fill(nodesPerSegment)(new IntArrayList())
+        val neighborArrayLists = Array.fill(nodesPerSegment)(new IntArrayList(4))
         val inStream = createInputStream(temporaryFilesInDirection(dir)(segmentI))
         val tempFileEdgeCount = (temporaryFilesInDirection(dir)(segmentI).length / 8).toInt
         for (edgeIndex <- 0 until tempFileEdgeCount) {
@@ -163,6 +166,12 @@ class MemoryMappedDirectedGraphConverter(val edgeListFile: File,
           }
         }
         inStream.close()
+
+        for (i <- neighborArrayLists.indices
+             if neighborArrayLists(i).size > 20 * 1000 * 1000) {
+          log(s"Note: node id ${segmentI + segmentCount * i} direction $dir has size " +
+            s"${neighborArrayLists (i).size}")
+        }
 
         val distinctNeighborArrayLists = neighborArrayLists map IntArrayUtil.sortedDistinctInts
         writeEdgeDataToStream(distinctNeighborArrayLists, outputStream)
