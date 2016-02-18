@@ -128,7 +128,7 @@ class MemoryMappedDirectedGraphSpec extends WordSpec with Matchers {
     }
     val invalidFile2 = stringToTemporaryFile("1 2\n3 4 5")
     an[IOException] should be thrownBy {
-      MemoryMappedDirectedGraphConverter.convert(invalidFile1, outputFile)
+      MemoryMappedDirectedGraphConverter.convert(invalidFile2, outputFile)
     }
     val validFile1 = stringToTemporaryFile("1 \t\t 2\n\n\n3\t4")
     // Shouldn't throw an exception

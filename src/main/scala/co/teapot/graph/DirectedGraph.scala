@@ -80,7 +80,19 @@ trait DirectedGraph {
   def uniformRandomInNeighbor(id: Int, random:Random = Random.self) =
     inNeighbor(id, random.nextInt(inDegree(id)))
 
-  // TODO: Ask Ashish if this is a good interface
+  /** Returns the out-degree of the given node id, or 0 if the node id does not exist. */
+  def outDegreeOr0(id: Int): Int =
+    if (existsNode(id))
+      outDegree(id)
+  else
+      0
+
+  /** Returns the in-degree of the given node id, or 0 if the node id does not exist. */
+  def inDegreeOr0(id: Int): Int =
+    if (existsNode(id))
+      inDegree(id)
+    else
+      0
   /** Called by other methods when given an id that doesn't exist in this graph.  By default it
     * throws an exception, but implementations can override it to return an IndexedSeq which is
     * the neighbor seq of non-existing nodes (typically an empty IndexedSeq).
@@ -111,7 +123,7 @@ trait DirectedGraph {
     * exist in this graph.  Deprecated: to decrease the number of objects used, get node
     * neighbors and degrees directly through the graph.
     */
-  @deprecated
+  @deprecated("Rather than using Node objects, use graph method directly", "1.0")
   def getNodeById(id: Int): Option[NodeWrapper] =
     if (existsNode(id))
       Some(new NodeWrapper(this, id))
