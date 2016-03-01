@@ -2,14 +2,14 @@ package soal.ppr
 
 import java.util.Random
 
+import co.teapot.graph.ConcurrentHashMapDynamicGraph
 import org.scalatest.{FlatSpec, Matchers}
-import soal.util.CassovaryUtil
 
 import scala.collection.mutable
 import scala.io.Source
 
 class BidirectionalPPREstimatorSpec extends FlatSpec with Matchers {
-  val graph = CassovaryUtil.readGraph("src/test/resources/test_graph.txt")
+  val graph = ConcurrentHashMapDynamicGraph.readGraph("src/test/resources/test_graph.txt")
   val teleportProb = 0.2f
   val random = new Random(2) // Seed for consistent tests
   val estimator = new BidirectionalPPREstimator(graph, teleportProb, random)
