@@ -4,8 +4,7 @@ version := "0.1"
 
 scalaVersion := "2.11.5"
 
-
-libraryDependencies += "com.twitter" %% "cassovary-core" % "6.3.0"
+libraryDependencies += "co.teapot" %% "tempest" % "0.8.0"
 
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
 

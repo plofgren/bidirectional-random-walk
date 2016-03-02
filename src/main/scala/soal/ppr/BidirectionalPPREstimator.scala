@@ -2,7 +2,8 @@ package soal.ppr
 
 import java.util.Random
 
-import com.twitter.cassovary.graph.{DirectedGraph, Node}
+
+import co.teapot.graph.DirectedGraph
 import soal.util._
 
 import scala.collection.mutable
@@ -14,7 +15,7 @@ import scala.collection.mutable
  * and Goel for more information on the algorithm implemented.
  */
 
-class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
+class BidirectionalPPREstimator (val graph: DirectedGraph,
                                  val teleportProbability: Float,
                                  val random: Random = new Random) {
   /**
@@ -27,7 +28,7 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
    */
   def estimatePPR(sourceDistribution: DiscreteDistribution,
                   targetId: Int,
-                  minimumPPR: Float = 1.0f / graph.nodeCount,
+                  minimumPPR: Float = 1.0f / graph.nodeCountOption.getOrElse(graph.maxNodeId),
                   relativeError: Float = 0.1f,
                   guaranteeRelativeError: Boolean = false): Float = {
     val chernoffConstant = if (guaranteeRelativeError)
@@ -61,7 +62,7 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
    */
   def estimatePPRSingleSource(sourceId: Int,
                               targetId: Int,
-                              minimumPPR: Float = 1.0f / graph.nodeCount,
+                              minimumPPR: Float = 1.0f / graph.nodeCountOption.getOrElse(graph.maxNodeId),
                               relativeError: Float = 0.1f,
                               guaranteeRelativeError: Boolean = false): Float =
     estimatePPR(new ConstantDistribution(sourceId), targetId,
@@ -78,7 +79,8 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
     * useful loop invariant.  See the paper "Local Computation of PageRank Contributions" for details.
     */
   private def computeContributions(targetId: Int, maxResidual: Float,
-                           edgeWeight: (Node, Node) => Float = (u: Node, v: Node) => 1.0f / u.outboundCount
+                           edgeWeight: (Int, Int) => Float =
+                             (u: Int, v: Int) => 1.0f / graph.outDegree(u)
       ): (mutable.Map[Int, Float], mutable.Map[Int, Float]) = {
     // Store all nodes with residual greater than maxResidual in a queue to be processed
     // Use ArrayDequeue because it is more efficient than the linked-list based mutable.Queue
@@ -95,10 +97,8 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
       val vResidual = residuals(vId)
       estimates(vId) += teleportProbability * residuals(vId)
       residuals(vId) = 0.0f
-      val v = graph.getNodeById(vId).get
-      for (uId <- v.inboundNodes()) {
-        val u = graph.getNodeById(uId).get
-        val residualChange = (1.0f - teleportProbability) * edgeWeight(u, v) * vResidual
+      for (uId <- graph.inNeighbors(vId)) {
+        val residualChange = (1.0f - teleportProbability) * edgeWeight(uId, vId) * vResidual
         if (residuals(uId) < maxResidual && residuals(uId) + residualChange >= maxResidual)
           largeResidualNodes.add(uId)
         residuals(uId) += residualChange
@@ -129,10 +129,8 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
       val vResidual = priorityQueue.maxPriority
       val vId = priorityQueue.extractMax()
       estimates(vId) += teleportProbability * vResidual
-      val v = graph.getNodeById(vId).get
-      for (uId <- v.inboundNodes()) {
-        val u = graph.getNodeById(uId).get
-        val residualChange = (1.0f - teleportProbability) * vResidual / u.outboundCount
+      for (uId <- graph.inNeighbors(vId)) {
+        val residualChange = (1.0f - teleportProbability) * vResidual / graph.outDegree(uId)
         priorityQueue.increasePriority(uId, priorityQueue.getPriority(uId) + residualChange)
       }
     }
@@ -155,12 +153,10 @@ class BidirectionalPPREstimator (val graph: DirectedGraph[Node],
   def samplePPR(sourceDistribution: DiscreteDistribution): Int = {
     var v = sourceDistribution.sample()
     while(random.nextFloat() > teleportProbability) {
-      val vNode = graph.getNodeById(v).get
-      vNode.randomOutboundNode(random) match {
-        case Some(outNeighbor) =>
-          v = outNeighbor
-        case None =>
-          v = sourceDistribution.sample() // Teleport after reaching dead end.
+      if (graph.outDegree(v) > 0) {
+        v = graph.uniformRandomOutNeighbor(v, random)
+      } else {
+        v = sourceDistribution.sample() // Teleport after reaching dead end.
       }
     }
     v
